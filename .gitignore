@@ -1,0 +1,13 @@
+__pycache__/
+*.pyc
+*.pyo
+.pytest_cache/
+.claude/settings.local.json
+.venv/
+venv/
+*.sqlite
+*.sqlite-journal
+dist/
+build/
+*.egg-info/
+out/
