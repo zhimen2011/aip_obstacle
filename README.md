@@ -1,6 +1,6 @@
 # AIP 障碍物数据识别与结构化模块
 
-从中国民航 AIP（航行资料汇编）中自动提取机场障碍物数据，结构化存入 SQLite，并支持导出 CSV / JSON / GeoJSON。
+从中国民航 AIP（航行资料汇编）中自动提取机场障碍物数据，结构化存入 SQLite，并支持导出 CSV / JSON / GeoJSON / XLSX。
 
 本模块是更大航空运行系统的上游数据组件，不是面向旅客或飞行员的终端产品。
 
@@ -60,10 +60,45 @@ output/
 ├── obstacles.csv            # 全量障碍物，缺字段留空
 ├── obstacles.json           # 全量障碍物，缺字段为 null
 ├── obstacles.geojson        # 仅含经纬度的障碍物（可在 QGIS / geojson.io 查看）
+├── obstacles.xlsx           # Excel 单表导出，保留原始顺序和 AIP 原始编号
 ├── parse_failures.csv       # 识别失败的行（保留原文，供人工复核）
 └── logs/
     └── run_YYYYMMDD_HHMMSS.log
 ```
+
+### 4. 图形界面人工修改
+
+```bash
+python run_gui.py
+```
+
+在图形界面中解析文件后，主表是“本次确认表”。系统会把成功解析的障碍物和解析失败的占位行放在同一张表里，尽量按 AIP/PDF 原始编号顺序排列。
+
+使用流程：
+
+1. 点击“解析文件”，生成本次确认表。
+2. 如果某些行解析失败，会以“待补录”状态进入确认表，占住原来的顺序位置。
+3. 可直接修改名称、编号、方位、磁方位、距离、经纬度、海拔和高度。
+4. 如 PDF 中还有未识别出来的记录，可用“上方新增行 / 下方新增行”手工补录。
+5. 点击“最终确认”后，本次确认表会覆盖写入 SQLite。
+6. 在点击“导出 XLSX”前选择输出目录即可；导出时会使用当前界面中的输出目录。
+7. 只有最终确认后，才能导出 XLSX；导出的 XLSX 只使用本次确认后的数据，不读取上一次旧数据。
+
+表格颜色含义：
+
+- 红色：高风险，必须人工复核。
+- 黄色：存在风险，需要关注。
+- 蓝色：已人工修改。
+
+导出 XLSX 时，系统按以下规则生成结果：
+
+- 人工修改过的字段使用修改后的值。
+- 未修改的字段继续使用自动解析值。
+- 待补录行必须补齐名称、编号、方位和距离后才能最终确认。
+- 最终确认会覆盖同一文件在数据库里的旧记录。
+- 导出前如果改了输出目录，系统会把本次确认数据写入新目录下的 SQLite，再导出 XLSX。
+- 缺经纬度不作为审核、异常或可信度判断依据。
+- XLSX 会增加“是否人工修改”列，便于后续复核。
 
 ---
 
@@ -82,6 +117,16 @@ python -m aip_obstacle.cli export output/ --format all
 # 4. 运行测试
 python -m pytest tests/ -v
 ```
+
+---
+
+## 交接文档
+
+后续接手本项目时，建议先阅读：
+
+- [docs/接手备忘录.md](docs/接手备忘录.md)
+- [docs/数据流说明.md](docs/数据流说明.md)
+- [docs/项目结构说明.md](docs/项目结构说明.md)
 
 ---
 
@@ -105,7 +150,10 @@ src/aip_obstacle/
 ├── exporters/
 │   ├── csv_exporter.py
 │   ├── json_exporter.py
-│   └── geojson_exporter.py
+│   ├── geojson_exporter.py
+│   └── excel_exporter.py
+├── ui/
+│   └── main_window.py   # GUI 主窗口，支持确认表、人工补录、最终确认和导出
 └── utils/
     ├── geo.py           # 坐标转换、单位换算
     ├── hashing.py       # 文件 sha256（去重用）
@@ -121,7 +169,8 @@ src/aip_obstacle/
 | `parsers/` | 只负责从文件中提取原始文本 + 页码，不做业务判断 |
 | `services/` | 识别候选行、解析字段、单位标准化 |
 | `storage/` | SQLite schema 初始化和读写，去重逻辑在数据库层（UNIQUE 约束） |
-| `exporters/` | 把数据库记录写成文件，不做字段计算 |
+| `exporters/` | 把数据库记录写成文件，不做字段解析；XLSX 单表导出保留原始顺序、AIP 原始编号和人工修改标记 |
+| `ui/` | 图形界面，负责文件选择、结果展示、人工修改和导出按钮；不写解析规则 |
 | `pipeline.py` | 把以上各层串联，对外暴露 `parse_file()` / `parse_text()` |
 
 ---
@@ -174,6 +223,6 @@ python -m pytest tests/ -v
 - OCR 支持（扫描版 PDF）
 - 根据「方位 + 距离 + ARP 坐标」反推障碍物经纬度
 - 磁方位自动换算为真方位
-- 图形界面（PySide6）
+- GUI 审核筛选和历史版本比对
 - 与更大航空运行系统的对接接口
 - 历史版本比对（AIP 周期性更新）

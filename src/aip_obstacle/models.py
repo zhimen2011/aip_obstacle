@@ -60,6 +60,10 @@ class Obstacle:
     # 解析置信度 0.0-1.0
     confidence_score: float = 0.0
 
+    # 人工修正状态。True 表示至少有一个字段在软件界面中被人工改过。
+    is_user_modified: bool = False
+    edited_at: Optional[str] = None
+
     source_page: int = 0
     raw_text: str = ""
 

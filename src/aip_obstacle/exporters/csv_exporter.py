@@ -13,6 +13,7 @@ _OBSTACLE_FIELDS = [
     "elevation_m", "height_m",
     "unit_distance_original", "unit_height_original",
     "confidence_score",
+    "is_user_modified", "edited_at",
     "source_page", "raw_text",
 ]
 

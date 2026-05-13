@@ -161,11 +161,10 @@ class TestConfidenceScore:
         assert obs[0].confidence_score >= 0.99
 
     def test_partial_score_no_latlon(self):
-        # 只有方位距离和高度，无经纬度 -> 0.7
+        # 缺经纬度不再降低可信度；方位距离 + 高度即可视为高可信
         obs, fails = _parse(PARTIAL)
         assert len(obs) == 1, f"应成功解析，fails={[f.reason for f in fails]}"
-        assert obs[0].confidence_score < 1.0
-        assert obs[0].confidence_score >= 0.6
+        assert obs[0].confidence_score >= 0.99
 
     def test_score_range(self):
         obs, _ = _parse(STANDARD_5LINE)

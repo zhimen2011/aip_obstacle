@@ -70,10 +70,8 @@ def _calc_confidence(
     dist: Optional[float],
     elev: Optional[float],
 ) -> float:
-    # 方位距离是必须字段，到这里一定有值，作为基础分
-    score = 0.6
-    if lat is not None and lon is not None:
-        score += 0.3
+    # 经纬度不作为可靠性判断依据；成功记录已具备方位+距离。
+    score = 0.9
     if elev is not None:
         score += 0.1
     return min(score, 1.0)
@@ -301,9 +299,7 @@ def _parse_one_row(row: Dict[str, Any]) -> Obstacle | ParseFailure:
     raw_text = " | ".join(str(c) for c in cells)
 
     # --- 置信度 ---
-    confidence = 0.7
-    if lat is not None and lon is not None:
-        confidence += 0.15
+    confidence = 0.85
     if elev is not None:
         confidence += 0.1
     if obstacle_type:

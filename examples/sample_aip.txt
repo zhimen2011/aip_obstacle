@@ -1,9 +1,0 @@
-ZBAA – BEIJING/Capital International Airport
-AD 2.10 OBSTACLES IN THE APPROACH AND TAKE-OFF AREAS AND CIRCLING AREA
-
-编号  名称          方位(°)  距离     高度
-1     通信塔        045      2500m    120m
-2     烟囱          090      1200m    80m
-3     水塔          180      800m     50m
-4     大楼          270      3000m    200m
-5     394812N 1161800E 铁塔  高度 150m

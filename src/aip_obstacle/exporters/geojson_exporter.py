@@ -13,6 +13,7 @@ _PROPERTIES_FIELDS = [
     "id", "source_file_id", "airport_icao", "obstacle_id", "name",
     "bearing_deg", "distance_m", "elevation_m", "height_m",
     "unit_distance_original", "unit_height_original",
+    "is_user_modified", "edited_at",
     "source_page", "raw_text",
 ]
 
