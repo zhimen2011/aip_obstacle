@@ -1,0 +1,4 @@
+pdfplumber==0.11.9
+pytest==9.0.3
+PySide6>=6.5
+openpyxl>=3.1
